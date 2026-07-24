@@ -1,4 +1,20 @@
-# 12. Convenções do Projeto
+# 2. Convenções do Projeto
+
+## 📑 Índice
+
+1. [🎯 Objetivo](#1-objetivo)
+2. [🌿 Estratégia de Branches](#2-estratégia-de-branches)
+3. [💬 Convenção de Commits](#3-convenção-de-commits)
+4. [🏷️ Versionamento](#4-versionamento)
+5. [📝 Convenções de Nomenclatura](#5-convenções-de-nomenclatura)
+6. [🌐 Idioma do Projeto](#6-idioma-do-projeto)
+7. [🏗️ Estrutura dos Microsserviços](#7-estrutura-dos-microsserviços)
+8. [📖 Padrões de Documentação](#8-padrões-de-documentação)
+9. [🔀 Convenções para Pull Requests](#9-convenções-para-pull-requests)
+10. [📋 Convenções para Issues](#10-convenções-para-issues)
+11. [📚 Referências](#11-referências)
+
+
 
 ## 1. Objetivo
 
