@@ -198,7 +198,6 @@ Este projeto adota convenções de nomenclatura para garantir consistência, leg
 Os repositórios devem utilizar apenas letras minúsculas e palavras separadas por hífen (`-`).
 
 Exemplos:
-
 ```text
 examen-crediti
 examen-crediti-api-gateway
@@ -254,7 +253,6 @@ event
 Os nomes das classes devem utilizar o padrão **PascalCase**.
 
 Exemplos:
-
 ```text
 CustomerController
 CustomerService
@@ -280,7 +278,6 @@ CreditAnalyzer
 Os métodos devem utilizar o padrão **camelCase**.
 
 Exemplos:
-
 ```text
 findCustomerById()
 calculateCreditScore()
@@ -428,8 +425,7 @@ src
 
 Todos os microsserviços devem manter uma estrutura semelhante na raiz do repositório.
 
-```text
-.
+```text.
 ├── src
 ├── .github
 ├── .gitignore
@@ -459,4 +455,155 @@ Todos os microsserviços devem manter uma estrutura semelhante na raiz do reposi
 - Novos pacotes podem ser adicionados quando houver necessidade, desde que possuam uma responsabilidade bem definida.
 - A organização dos pacotes deve respeitar os princípios de coesão e responsabilidade única.
 - A estrutura deve permanecer consistente entre todos os microsserviços do projeto.
+
+
+
+## 8. Padrões de Documentação
+
+Toda a documentação do projeto deve seguir um padrão único de organização, escrita e formatação, facilitando a leitura e a manutenção ao longo do ciclo de vida do sistema.
+
+### Estrutura
+
+A documentação deve ser organizada no diretório `docs/`, utilizando arquivos Markdown (`.md`) numerados para indicar a ordem de leitura.
+
+Exemplo:
+```text
+docs/
+├── 00-roadmap.md
+├── 01-visao-geral.md
+├── 02-requisitos-funcionais.md
+├── 03-requisitos-nao-funcionais.md
+├── 04-regras-de-negocio.md
+├── 05-arquitetura.md
+├── 06-modelagem.md
+├── 07-api.md
+├── 08-seguranca.md
+├── 09-observabilidade.md
+├── 10-deploy.md
+├── 11-testes.md
+└── 12-convencoes-do-projeto.md
 ```
+
+### Formatação
+
+A documentação deve utilizar:
+
+- Títulos hierárquicos (`#`, `##`, `###`).
+- Tabelas para informações comparativas.
+- Listas para regras, requisitos e procedimentos.
+- Blocos de código para exemplos técnicos.
+- Diagramas quando contribuírem para o entendimento da arquitetura ou dos fluxos do sistema.
+
+### Escrita
+
+A documentação deve ser:
+
+- Clara e objetiva.
+- Consistente em todo o projeto.
+- Escrita em português.
+- Atualizada sempre que houver mudanças relevantes no sistema.
+
+Sempre que possível, deve descrever **o motivo** de uma decisão técnica, e não apenas **como** ela foi implementada.
+
+### Exemplos
+
+Exemplos de código devem:
+
+- Ser curtos e objetivos.
+- Representar cenários reais do projeto.
+- Permanecer atualizados com a implementação.
+
+### Regras
+
+- Toda alteração significativa no projeto deve ser refletida na documentação correspondente.
+- Não devem existir documentos duplicados abordando o mesmo assunto.
+- Informações obsoletas devem ser corrigidas ou removidas.
+- Novos documentos devem seguir o padrão de nomenclatura definido neste guia.
+- O README de cada microsserviço deve permanecer alinhado com sua implementação e documentação técnica.
+
+
+## 9. Convenções para Pull Requests
+
+Toda alteração na branch `main` deve ocorrer exclusivamente por meio de **Pull Request (PR)**.
+
+O objetivo é garantir revisão de código, rastreabilidade das alterações e manutenção da qualidade do projeto.
+
+### Quando abrir um Pull Request
+
+Um Pull Request deve ser aberto quando:
+
+- Uma funcionalidade for concluída.
+- Um bug for corrigido.
+- Uma refatoração estiver finalizada.
+- A documentação for atualizada.
+- Uma melhoria técnica estiver pronta para revisão.
+
+### Título
+
+O título do Pull Request deve seguir o mesmo padrão utilizado nos commits.
+
+Formato:
+
+```text
+<tipo>(<escopo>): <descrição>
+```
+
+Exemplos:
+
+```text
+feat(customer): adicionar endpoint de cadastro de clientes
+
+fix(auth): corrigir validação do JWT
+
+docs(api): atualizar documentação da API
+```
+
+### Descrição
+
+A descrição do Pull Request deve informar:
+
+- Objetivo da alteração.
+- Principais modificações realizadas.
+- Impactos em outros componentes (quando houver).
+- Issue relacionada (quando existir).
+
+Exemplo:
+
+```text
+## Objetivo
+
+Implementar o cadastro de clientes.
+
+## Alterações
+
+- Criado CustomerController
+- Criado CustomerService
+- Criado CustomerRepository
+- Adicionados testes de integração
+
+## Issue
+
+Closes #15
+```
+
+### Critérios para Merge
+
+Antes do merge, o Pull Request deve atender aos seguintes critérios:
+
+- Código compilando sem erros.
+- Testes automatizados executados com sucesso.
+- Padrões de código respeitados.
+- Convenções do projeto seguidas.
+- Documentação atualizada, quando necessário.
+- Aprovação da revisão de código (quando aplicável).
+
+### Regras
+
+- Não realizar merge diretamente na branch `main`.
+- Cada Pull Request deve representar uma única alteração lógica.
+- Pull Requests muito grandes devem ser evitados.
+- O histórico de commits deve permanecer organizado e compreensível.
+- Após o merge, a branch utilizada deve ser removida.
+
+
+
