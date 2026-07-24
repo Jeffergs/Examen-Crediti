@@ -606,4 +606,100 @@ Antes do merge, o Pull Request deve atender aos seguintes critérios:
 - Após o merge, a branch utilizada deve ser removida.
 
 
+## 10. Convenções para Issues
+
+Todas as funcionalidades, correções, melhorias e tarefas do projeto devem ser registradas por meio de **Issues**.
+
+O objetivo é garantir rastreabilidade, organização e transparência durante o desenvolvimento.
+
+### Quando criar uma Issue
+
+Uma Issue deve ser criada para:
+
+- Implementação de novas funcionalidades.
+- Correção de bugs.
+- Melhorias técnicas.
+- Refatorações.
+- Atualizações de documentação.
+- Criação de testes.
+- Estudos ou pesquisas técnicas relevantes para o projeto.
+
+### Título
+
+O título da Issue deve ser curto, claro e objetivo.
+
+Exemplos:
+
+```text
+Implementar cadastro de clientes
+
+Adicionar autenticação JWT
+
+Criar documentação da API
+
+Corrigir cálculo do score de crédito
+```
+
+### Descrição
+
+A descrição da Issue deve conter, sempre que possível:
+
+- Objetivo.
+- Contexto.
+- Requisitos.
+- Critérios de aceite.
+- Informações adicionais relevantes.
+
+Exemplo:
+
+```text
+## Objetivo
+
+Permitir o cadastro de novos clientes.
+
+## Requisitos
+
+- Criar endpoint REST.
+- Validar CPF.
+- Persistir dados no banco.
+
+## Critérios de Aceite
+
+- Cadastro realizado com sucesso.
+- CPF duplicado deve retornar erro.
+- Testes automatizados implementados.
+```
+
+### Organização
+
+Sempre que aplicável, uma Issue deve possuir:
+
+- Tipo (Label).
+- Área (Label).
+- Prioridade (Label).
+- Milestone.
+- Tamanho da implementação (`XS`, `S`, `M`, `L` ou `XL`).
+
+### Relacionamento com Pull Requests
+
+Sempre que possível, um Pull Request deve estar vinculado à Issue correspondente.
+
+Exemplo:
+
+```text
+Closes #15
+```
+
+Após o merge do Pull Request, a Issue será encerrada automaticamente pelo GitHub.
+
+### Regras
+
+- Cada Issue deve representar uma única demanda.
+- O título deve descrever claramente o objetivo da tarefa.
+- A descrição deve conter informações suficientes para implementação.
+- Labels, Milestone e Tamanho devem ser definidos sempre que aplicável.
+- Issues concluídas devem ser encerradas após o merge do Pull Request correspondente.
+- Todas as novas Issues devem ser criadas utilizando os templates disponibilizados pelo repositório.
+
+
 
