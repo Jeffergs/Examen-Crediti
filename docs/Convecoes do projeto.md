@@ -189,6 +189,171 @@ notification-service 1.1.0
 - Durante o desenvolvimento inicial, as versões devem permanecer na série `0.x.x`.
 - A versão `1.0.0` representa a primeira versão estável de cada microsserviço.
 
+## 5. Convenções de Nomenclatura
+
+Este projeto adota convenções de nomenclatura para garantir consistência, legibilidade e padronização entre todos os microsserviços e artefatos.
+
+### Repositórios
+
+Os repositórios devem utilizar apenas letras minúsculas e palavras separadas por hífen (`-`).
+
+Exemplos:
+
+```text
+examen-crediti
+examen-crediti-api-gateway
+examen-crediti-auth-service
+examen-crediti-customer-service
+examen-crediti-credit-service
+examen-crediti-notification-service
+```
+
+### Branches
+
+As branches devem seguir a convenção definida na seção **Estratégia de Branches**.
+
+Exemplos:
+
+```text
+feature/customer-registration
+fix/jwt-validation
+refactor/credit-analysis
+docs/project-conventions
+test/customer-service
+chore/update-dependencies
+```
+
+### Pacotes Java
+
+Os pacotes devem utilizar apenas letras minúsculas.
+
+Pacote base:
+
+```text
+br.com.examencrediti
+```
+
+Subpacotes:
+
+```text
+controller
+service
+repository
+entity
+dto
+mapper
+config
+exception
+security
+client
+event
+```
+
+### Classes
+
+Os nomes das classes devem utilizar o padrão **PascalCase**.
+
+Exemplos:
+
+```text
+CustomerController
+CustomerService
+CreditAnalysisService
+NotificationProducer
+JwtAuthenticationFilter
+```
+
+### Interfaces
+
+Interfaces também devem utilizar **PascalCase**, sem prefixos como `I`.
+
+Exemplos:
+
+```text
+CustomerRepository
+NotificationService
+CreditAnalyzer
+```
+
+### Métodos
+
+Os métodos devem utilizar o padrão **camelCase**.
+
+Exemplos:
+
+```text
+findCustomerById()
+calculateCreditScore()
+sendNotification()
+generateToken()
+```
+
+### Variáveis e Atributos
+
+Variáveis e atributos devem utilizar o padrão **camelCase**.
+
+Exemplos:
+
+```text
+customerId
+creditScore
+createdAt
+expirationDate
+```
+
+### Constantes
+
+Constantes devem utilizar letras maiúsculas com palavras separadas por `_`.
+
+Exemplos:
+
+```text
+MAX_SCORE
+DEFAULT_TIMEOUT
+JWT_EXPIRATION_TIME
+```
+
+### Endpoints REST
+
+Os endpoints devem utilizar letras minúsculas e palavras separadas por hífen (`-`).
+
+Exemplos:
+
+```text
+/api/customers
+/api/credit-analysis
+/api/notifications
+```
+
+### Banco de Dados
+
+Tabelas e colunas devem utilizar **snake_case**.
+
+Exemplos:
+
+```text
+customer
+credit_analysis
+notification
+
+customer_id
+created_at
+updated_at
+credit_score
+```
+
+### Arquivos
+
+Arquivos de documentação devem utilizar letras minúsculas e hífen (`-`).
+
+Exemplos:
+
+```text
+01-visao-geral.md
+05-arquitetura.md
+12-convencoes-do-projeto.md
+```
+
 ## 6. Idioma do Projeto
 
 O Examen Crediti adota uma política de idiomas para manter a consistência entre a documentação e os artefatos técnicos do projeto.
