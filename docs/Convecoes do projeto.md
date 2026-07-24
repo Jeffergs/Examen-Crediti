@@ -189,3 +189,39 @@ notification-service 1.1.0
 - Durante o desenvolvimento inicial, as versões devem permanecer na série `0.x.x`.
 - A versão `1.0.0` representa a primeira versão estável de cada microsserviço.
 
+## 6. Idioma do Projeto
+
+O Examen Crediti adota uma política de idiomas para manter a consistência entre a documentação e os artefatos técnicos do projeto.
+
+| Elemento | Idioma |
+|----------|---------|
+| Documentação (`docs/`) | Português |
+| README | Português |
+| Issues | Português |
+| Pull Requests | Português |
+| Milestones | Português |
+| GitHub Projects | Português |
+| Comentários em código | Português* |
+| Commits | Português |
+| Classes | Inglês |
+| Interfaces | Inglês |
+| Métodos | Inglês |
+| Variáveis | Inglês |
+| Constantes | Inglês |
+| Pacotes | Inglês |
+| Microsserviços | Inglês |
+| APIs REST | Inglês |
+| Endpoints | Inglês |
+| Banco de dados | Inglês |
+| Eventos Kafka | Inglês |
+| Mensagens de erro da API | Inglês |
+
+> **\*** Comentários no código devem ser evitados sempre que possível. Quando forem realmente necessários para explicar uma regra de negócio complexa ou uma decisão técnica importante, devem ser escritos em português.
+
+### Regras
+
+- Toda a documentação do projeto deve ser escrita em português.
+- Todo o código-fonte deve ser escrito em inglês.
+- Os identificadores técnicos (classes, métodos, variáveis, pacotes, endpoints e banco de dados) devem ser escritos em inglês.
+- As mensagens de commit devem seguir o padrão **Conventional Commits**, utilizando os tipos (`feat`, `fix`, `docs`, etc.) e escopos em inglês, com a descrição em português.
+- Comentários no código devem ser utilizados apenas quando realmente agregarem valor ao entendimento da implementação.
