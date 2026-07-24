@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: 📖 Documentação do Projeto
+    url: https://github.com/<seu-usuario>/examen-crediti/tree/main/docs
+    about: Consulte a documentação antes de abrir uma Issue.
+
+  - name: 💬 Discussões
+    url: https://github.com/<seu-usuario>/examen-crediti/discussions
+    about: Utilize as Discussions para dúvidas, ideias e perguntas gerais.
+```
