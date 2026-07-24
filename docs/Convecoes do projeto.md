@@ -390,3 +390,73 @@ O Examen Crediti adota uma política de idiomas para manter a consistência entr
 - Os identificadores técnicos (classes, métodos, variáveis, pacotes, endpoints e banco de dados) devem ser escritos em inglês.
 - As mensagens de commit devem seguir o padrão **Conventional Commits**, utilizando os tipos (`feat`, `fix`, `docs`, etc.) e escopos em inglês, com a descrição em português.
 - Comentários no código devem ser utilizados apenas quando realmente agregarem valor ao entendimento da implementação.
+
+
+## 7. Estrutura dos Microsserviços
+
+Todos os microsserviços do projeto devem seguir uma estrutura de diretórios padronizada, garantindo consistência, organização e facilidade de manutenção.
+
+### Estrutura Base
+
+```text
+src
+├── main
+│   ├── java
+│   │   └── br
+│   │       └── com
+│   │           └── examencrediti
+│   │               ├── config
+│   │               ├── controller
+│   │               ├── dto
+│   │               ├── entity
+│   │               ├── exception
+│   │               ├── mapper
+│   │               ├── repository
+│   │               ├── service
+│   │               └── ExamenCreditiApplication.java
+│   │
+│   └── resources
+│       ├── application.yml
+│       └── db
+│           └── migration
+│
+└── test
+    └── java
+```
+
+### Estrutura da Raiz do Projeto
+
+Todos os microsserviços devem manter uma estrutura semelhante na raiz do repositório.
+
+```text
+.
+├── src
+├── .github
+├── .gitignore
+├── Dockerfile
+├── docker-compose.yml
+├── pom.xml
+├── README.md
+└── LICENSE
+```
+
+### Responsabilidade dos Pacotes
+
+| Pacote | Responsabilidade |
+|---------|------------------|
+| `config` | Configurações da aplicação e beans do Spring. |
+| `controller` | Exposição dos endpoints REST. |
+| `dto` | Objetos de transferência de dados. |
+| `entity` | Entidades do domínio. |
+| `exception` | Tratamento de exceções. |
+| `mapper` | Conversão entre entidades e DTOs. |
+| `repository` | Acesso aos dados. |
+| `service` | Regras de negócio. |
+
+### Regras
+
+- Todos os microsserviços devem seguir esta estrutura como padrão.
+- Novos pacotes podem ser adicionados quando houver necessidade, desde que possuam uma responsabilidade bem definida.
+- A organização dos pacotes deve respeitar os princípios de coesão e responsabilidade única.
+- A estrutura deve permanecer consistente entre todos os microsserviços do projeto.
+```
