@@ -702,4 +702,38 @@ Após o merge do Pull Request, a Issue será encerrada automaticamente pelo GitH
 - Todas as novas Issues devem ser criadas utilizando os templates disponibilizados pelo repositório.
 
 
+```markdown
+## 11. Referências
+
+As convenções adotadas neste projeto são baseadas nas seguintes especificações, guias e documentações oficiais:
+
+| Referência | Descrição | Link |
+|------------|-----------|------|
+| Semantic Versioning (SemVer) | Padrão para versionamento de software. | [semver.org](https://semver.org/) |
+| Conventional Commits | Convenção para padronização de mensagens de commit. | [conventionalcommits.org](https://www.conventionalcommits.org/) |
+| GitHub Flow | Fluxo de trabalho baseado em branches e Pull Requests. | [docs.github.com](https://docs.github.com/en/get-started/using-github/github-flow) |
+| Markdown Guide | Guia de sintaxe Markdown utilizado na documentação. | [markdownguide.org](https://www.markdownguide.org/) |
+| Java Language Specification | Especificação oficial da linguagem Java. | [docs.oracle.com](https://docs.oracle.com/javase/specs/) |
+| Spring Framework Documentation | Documentação oficial do Spring Framework. | [docs.spring.io](https://docs.spring.io/spring-framework/reference/) |
+| Spring Boot Reference Documentation | Documentação oficial do Spring Boot. | [docs.spring.io](https://docs.spring.io/spring-boot/documentation.html) |
+| Spring Security Reference | Documentação oficial do Spring Security. | [docs.spring.io](https://docs.spring.io/spring-security/reference/) |
+| Spring Cloud Reference | Documentação oficial do Spring Cloud. | [docs.spring.io](https://docs.spring.io/spring-cloud/docs/current/reference/html/) |
+| Jakarta Persistence (JPA) Specification | Especificação oficial da Jakarta Persistence (JPA). | [jakarta.ee](https://jakarta.ee/specifications/persistence/) |
+| PostgreSQL Documentation | Documentação oficial do PostgreSQL. | [postgresql.org](https://www.postgresql.org/docs/) |
+| MongoDB Documentation | Documentação oficial do MongoDB. | [mongodb.com](https://www.mongodb.com/docs/) |
+| Apache Kafka Documentation | Documentação oficial do Apache Kafka. | [kafka.apache.org](https://kafka.apache.org/documentation/) |
+| Docker Documentation | Documentação oficial do Docker. | [docs.docker.com](https://docs.docker.com/) |
+| OpenAPI Specification | Especificação para documentação de APIs REST. | [spec.openapis.org](https://spec.openapis.org/oas/latest.html) |
+| OWASP Top 10 | Principais riscos de segurança para aplicações web. | [owasp.org](https://owasp.org/www-project-top-ten/) |
+| REST Architectural Style | Princípios da arquitetura REST descritos por Roy Fielding. | [ics.uci.edu](https://ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm) |
+| JUnit 5 User Guide | Guia oficial do JUnit 5 para testes automatizados. | [junit.org](https://junit.org/junit5/docs/current/user-guide/) |
+| Mockito Documentation | Documentação oficial do Mockito. | [site.mockito.org](https://site.mockito.org/) |
+| Testcontainers | Framework para testes de integração utilizando containers. | [testcontainers.com](https://testcontainers.com/) |
+| Micrometer | Biblioteca para coleta de métricas em aplicações Java. | [docs.micrometer.io](https://docs.micrometer.io/) |
+| OpenTelemetry | Framework para observabilidade (métricas, logs e traces). | [opentelemetry.io](https://opentelemetry.io/docs/) |
+| Prometheus | Plataforma de monitoramento e coleta de métricas. | [prometheus.io](https://prometheus.io/docs/) |
+| Grafana | Plataforma para visualização de métricas e observabilidade. | [grafana.com](https://grafana.com/docs/) |
+
+Este documento deve ser revisado sempre que novas convenções, padrões ou tecnologias forem adotados pelo projeto.
+```
 
