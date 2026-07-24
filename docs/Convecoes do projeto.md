@@ -1,6 +1,6 @@
 # 2. Convenções do Projeto
 
-## 📑 Índice
+## 📑 Índice <a id="indice"></a>
 
 1. [🎯 Objetivo](#1-objetivo)
 2. [🌿 Estratégia de Branches](#2-estratégia-de-branches)
@@ -21,6 +21,9 @@
 Este documento define as convenções adotadas no projeto Examen Crediti para garantir consistência na organização do código, da documentação e do fluxo de desenvolvimento.
 
 Todas as contribuições devem seguir estas convenções, assegurando padronização, legibilidade e facilidade de manutenção ao longo da evolução do projeto.
+
+⬆️ [Voltar ao índice](#indice)
+
 
 ## 2. Estratégia de Branches
 
@@ -54,6 +57,9 @@ O projeto adota o GitHub Flow como estratégia de desenvolvimento.
 - Nunca realizar alterações diretamente na `main`.
 - Cada branch deve representar apenas uma funcionalidade, correção ou tarefa.
 - Todo merge deve ser realizado por meio de um Pull Request.
+
+⬆️ [Voltar ao índice](#indice)
+
 
 ## 3. Convenção de Commits
 
@@ -137,6 +143,9 @@ perf(credit): otimizar cálculo do score de crédito
 - Não finalizar a descrição com ponto (`.`).
 - Cada commit deve representar **uma única alteração lógica e coesa**.
 
+⬆️ [Voltar ao índice](#indice)
+
+
 ## 4. Versionamento
 
 O projeto adota o padrão **Semantic Versioning (SemVer) 2.0.0** para identificar e controlar a evolução das versões da aplicação.
@@ -204,6 +213,9 @@ notification-service 1.1.0
 - Toda nova versão deve seguir o padrão **Semantic Versioning (SemVer)**.
 - Durante o desenvolvimento inicial, as versões devem permanecer na série `0.x.x`.
 - A versão `1.0.0` representa a primeira versão estável de cada microsserviço.
+
+⬆️ [Voltar ao índice](#indice)
+
 
 ## 5. Convenções de Nomenclatura
 
@@ -367,6 +379,9 @@ Exemplos:
 12-convencoes-do-projeto.md
 ```
 
+⬆️ [Voltar ao índice](#indice)
+
+
 ## 6. Idioma do Projeto
 
 O Examen Crediti adota uma política de idiomas para manter a consistência entre a documentação e os artefatos técnicos do projeto.
@@ -403,6 +418,8 @@ O Examen Crediti adota uma política de idiomas para manter a consistência entr
 - Os identificadores técnicos (classes, métodos, variáveis, pacotes, endpoints e banco de dados) devem ser escritos em inglês.
 - As mensagens de commit devem seguir o padrão **Conventional Commits**, utilizando os tipos (`feat`, `fix`, `docs`, etc.) e escopos em inglês, com a descrição em português.
 - Comentários no código devem ser utilizados apenas quando realmente agregarem valor ao entendimento da implementação.
+
+⬆️ [Voltar ao índice](#indice)
 
 
 ## 7. Estrutura dos Microsserviços
@@ -472,6 +489,7 @@ Todos os microsserviços devem manter uma estrutura semelhante na raiz do reposi
 - A organização dos pacotes deve respeitar os princípios de coesão e responsabilidade única.
 - A estrutura deve permanecer consistente entre todos os microsserviços do projeto.
 
+⬆️ [Voltar ao índice](#indice)
 
 
 ## 8. Padrões de Documentação
@@ -536,6 +554,8 @@ Exemplos de código devem:
 - Informações obsoletas devem ser corrigidas ou removidas.
 - Novos documentos devem seguir o padrão de nomenclatura definido neste guia.
 - O README de cada microsserviço deve permanecer alinhado com sua implementação e documentação técnica.
+
+⬆️ [Voltar ao índice](#indice)
 
 
 ## 9. Convenções para Pull Requests
@@ -620,6 +640,8 @@ Antes do merge, o Pull Request deve atender aos seguintes critérios:
 - Pull Requests muito grandes devem ser evitados.
 - O histórico de commits deve permanecer organizado e compreensível.
 - Após o merge, a branch utilizada deve ser removida.
+
+⬆️ [Voltar ao índice](#indice)
 
 
 ## 10. Convenções para Issues
@@ -717,6 +739,7 @@ Após o merge do Pull Request, a Issue será encerrada automaticamente pelo GitH
 - Issues concluídas devem ser encerradas após o merge do Pull Request correspondente.
 - Todas as novas Issues devem ser criadas utilizando os templates disponibilizados pelo repositório.
 
+⬆️ [Voltar ao índice](#indice)
 
 
 ## 11. Referências
@@ -752,4 +775,4 @@ As convenções adotadas neste projeto são baseadas nas seguintes especificaç�
 
 Este documento deve ser revisado sempre que novas convenções, padrões ou tecnologias forem adotados pelo projeto.
 
-
+⬆️ [Voltar ao índice](#indice)
