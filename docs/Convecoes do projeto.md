@@ -702,7 +702,7 @@ Após o merge do Pull Request, a Issue será encerrada automaticamente pelo GitH
 - Todas as novas Issues devem ser criadas utilizando os templates disponibilizados pelo repositório.
 
 
-```markdown
+
 ## 11. Referências
 
 As convenções adotadas neste projeto são baseadas nas seguintes especificações, guias e documentações oficiais:
@@ -735,5 +735,5 @@ As convenções adotadas neste projeto são baseadas nas seguintes especificaç�
 | Grafana | Plataforma para visualização de métricas e observabilidade. | [grafana.com](https://grafana.com/docs/) |
 
 Este documento deve ser revisado sempre que novas convenções, padrões ou tecnologias forem adotados pelo projeto.
-```
+
 
