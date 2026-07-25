@@ -120,29 +120,7 @@ Cada serviço possui responsabilidade única, autonomia de implantação e banco
 
 A comunicação ocorre por meio de APIs REST e eventos publicados em um broker de mensagens.
 
-```text
-                           Cliente
-                              │
-                              ▼
-                        API Gateway
-                              │
-          ┌───────────────────┼───────────────────┐
-          ▼                   ▼                   ▼
- Customer Service      Credit Service      Identity Service
-          │                   │                   │
-          ▼                   ▼                   ▼
-     PostgreSQL         PostgreSQL         PostgreSQL
-          │                   │
-          └──────────────┬────┘
-                         ▼
-                    Apache Kafka
-                         │
-                         ▼
-                  Audit Service
-                         │
-                         ▼
-                     MongoDB
-```
+![arquitetura-geral](image.png)
 
 A arquitetura detalhada será apresentada em **06-arquitetura.md**.
 
