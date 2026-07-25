@@ -16,7 +16,7 @@ Seu objetivo é definir o comportamento esperado da aplicação, servindo como b
 1. [📦 Escopo Funcional](#escopo)
 2. [🏗️ Visão Geral dos Microsserviços](#visao)
 3. [📋 Requisitos Funcionais](#rf)
-   - [3.1 Auth Service](#aut)
+   - [3.1 Identity Service](#aut)
    - [3.2 Customer Service](#customer)
    - [3.3 Credit Analysis Service](#credit)
    - [3.4 Audit Service](#audit)
@@ -43,7 +43,7 @@ As regras de negócio, arquitetura, modelagem de dados, APIs, segurança, observ
 
 | Microsserviço | Responsabilidade |
 |---------------|------------------|
-| `auth-service` | Autenticação e autorização de usuários. |
+| `identity-service` | Autenticação e autorização de usuários. |
 | `customer-service` | Gerenciamento de clientes. |
 | `credit-analysis-service` | Realização da análise de crédito. |
 | `audit-service` | Registro e consulta dos eventos de auditoria. |
@@ -56,7 +56,7 @@ As regras de negócio, arquitetura, modelagem de dados, APIs, segurança, observ
 # 📋 Requisitos Funcionais
 
 <a id="aut"></a>
-## 4.1 🔐 Auth Service
+## 4.1 🔐 Identity Service
 
 ### Autenticação
 
@@ -184,7 +184,7 @@ As regras de negócio, arquitetura, modelagem de dados, APIs, segurança, observ
 
 | Requisitos | Microsserviço |
 |------------|---------------|
-| RF-001 a RF-008 | `auth-service` |
+| RF-001 a RF-008 | `identity-service` |
 | RF-009 a RF-022 | `customer-service` |
 | RF-023 a RF-034 | `credit-analysis-service` |
 | RF-035 a RF-042 | `audit-service` |

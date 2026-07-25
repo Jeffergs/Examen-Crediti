@@ -128,7 +128,7 @@ A comunicação ocorre por meio de APIs REST e eventos publicados em um broker d
                               │
           ┌───────────────────┼───────────────────┐
           ▼                   ▼                   ▼
- Customer Service      Credit Service      Authentication Service
+ Customer Service      Credit Service      Identity Service
           │                   │                   │
           ▼                   ▼                   ▼
      PostgreSQL         PostgreSQL         PostgreSQL

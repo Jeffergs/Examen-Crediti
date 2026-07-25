@@ -12,7 +12,8 @@
 8. [📖 Padrões de Documentação](#8-padrões-de-documentação)
 9. [🔀 Convenções para Pull Requests](#9-convenções-para-pull-requests)
 10. [📋 Convenções para Issues](#10-convenções-para-issues)
-11. [📚 Referências](#11-referências)
+11. [🏷️ Convenções de Identificação](#convencoes-de-identificacao)
+12. [📚 Referências](#11-referências)
 
 
 
@@ -742,7 +743,69 @@ Após o merge do Pull Request, a Issue será encerrada automaticamente pelo GitH
 ⬆️ [Voltar ao índice](#indice)
 
 
-## 11. Referências
+<a id="convencoes-de-identificacao"></a>
+
+## 11. Convenções de Identificação
+
+Para garantir consistência, rastreabilidade e facilitar a navegação entre os documentos do projeto, todos os artefatos utilizam identificadores padronizados.
+
+### Prefixos dos artefatos
+
+| Prefixo | Artefato |
+|---------|----------|
+| **RF** | Requisito Funcional |
+| **RN** | Regra de Negócio |
+| **RNF** | Requisito Não Funcional |
+| **CT** | Caso de Teste |
+| **ADR** | Architectural Decision Record (Registro de Decisão Arquitetural) |
+
+### Prefixos dos domínios
+
+| Prefixo | Domínio |
+|---------|----------|
+| **ID** | Identity Service |
+| **CU** | Customer Service |
+| **CA** | Credit Analysis Service |
+| **AU** | Audit Service |
+
+### Estrutura dos identificadores
+
+Os identificadores seguem o padrão:
+
+```text
+<TIPO>-<DOMÍNIO>-<NÚMERO>
+```
+
+Onde:
+
+- **TIPO** identifica o artefato da documentação.
+- **DOMÍNIO** identifica o microsserviço ao qual o artefato pertence.
+- **NÚMERO** corresponde a uma numeração sequencial dentro do domínio.
+
+### Exemplos
+
+| Identificador | Descrição |
+|---------------|-----------|
+| **RF-ID-001** | Primeiro requisito funcional do Identity Service. |
+| **RN-ID-003** | Terceira regra de negócio do Identity Service. |
+| **RF-CU-007** | Sétimo requisito funcional do Customer Service. |
+| **RN-CA-012** | Décima segunda regra de negócio do Credit Analysis Service. |
+| **CT-CA-012** | Caso de teste relacionado à regra RN-CA-012. |
+| **ADR-004** | Quarta decisão arquitetural registrada no projeto. |
+
+### Convenções
+
+- A numeração é sequencial e independente para cada domínio.
+- Os identificadores são únicos e não devem ser reutilizados.
+- Caso um item seja removido, sua numeração não deve ser reaproveitada.
+- Os documentos devem utilizar os mesmos identificadores para manter a rastreabilidade entre requisitos, regras de negócio, modelagem, APIs, implementação e testes.
+
+---
+
+⬆️ [Voltar ao índice](#indice)
+
+
+## 12. Referências
 
 As convenções adotadas neste projeto são baseadas nas seguintes especificações, guias e documentações oficiais:
 
