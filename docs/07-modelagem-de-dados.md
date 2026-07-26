@@ -196,7 +196,6 @@ Seu modelo de dados é composto pelas seguintes entidades:
 
 - Cliente;
 - Endereço;
-- Documento;
 - Contato;
 - Vínculo Empregatício;
 - Renda.
@@ -232,19 +231,6 @@ A Entidade **Endereço** representa os endereços cadastrados pelo cliente.
 | Bairro | Bairro do endereço. |
 | Cidade | Cidade do endereço. |
 | Estado | Unidade federativa do endereço. |
-
-#### Documento
-
-A Entidade **Documento** representa os documentos oficiais cadastrados pelo cliente.
-
-| Atributo | Descrição |
-|----------|-----------|
-| Id | Identificador único do documento. |
-| Tipo | Tipo do documento. |
-| Número | Número do documento. |
-| Órgão Emissor | Órgão responsável pela emissão do documento. |
-| UF | Unidade federativa do órgão emissor. |
-| Data de Emissão | Data de emissão do documento. |
 
 #### Contato
 
