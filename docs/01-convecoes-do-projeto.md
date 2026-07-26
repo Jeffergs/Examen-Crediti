@@ -839,3 +839,253 @@ As convenções adotadas neste projeto são baseadas nas seguintes especificaç�
 Este documento deve ser revisado sempre que novas convenções, padrões ou tecnologias forem adotados pelo projeto.
 
 ⬆️ [Voltar ao índice](#indice)
+
+
+4. Convenções da API
+    4.1 Operation ID (OpenAPI/Swagger)
+    4.2 Nomenclatura dos DTOs
+    4.3 Respostas HTTP
+    4.4 MessageResponse
+    4.5 Respostas de Erro
+    4.6 Paginação
+    4.7 Ordenação
+    4.8 Filtros
+    4.9 Versionamento
+    4.10 Idempotência
+
+
+## 4. Convenções da API
+
+As convenções descritas nesta seção estabelecem os padrões adotados para a especificação, implementação e documentação das APIs do Examen Crediti. Seu objetivo é garantir consistência entre o código-fonte, a documentação técnica, o OpenAPI/Swagger e os testes.
+
+### 4.1 Operation ID (OpenAPI/Swagger)
+
+Durante a implementação dos endpoints utilizando Spring Boot e OpenAPI/Swagger, todas as operações deverão definir um `operationId` por meio da anotação `@Operation`.
+
+O `operationId` deverá seguir as seguintes regras:
+
+- Ser único em toda a API.
+- Ser escrito em camelCase.
+- Representar claramente a ação executada pelo endpoint.
+- Não conter espaços ou caracteres especiais.
+- Permanecer estável ao longo da evolução da API, evitando alterações desnecessárias.
+
+Exemplos:
+
+| Endpoint | Operation ID |
+|----------|--------------|
+| POST /auth/login | `login` |
+| POST /auth/refresh | `refreshToken` |
+| POST /auth/logout | `logout` |
+| GET /customers | `findAllCustomers` |
+| GET /customers/{id} | `findCustomerById` |
+| POST /customers | `createCustomer` |
+| PUT /customers/{id} | `updateCustomer` |
+| PATCH /customers/{id} | `patchCustomer` |
+| DELETE /customers/{id} | `deleteCustomer` |
+
+> **Observação**
+>
+> O `operationId` deverá ser definido apenas durante a implementação da API utilizando OpenAPI/Swagger. Ele não faz parte da documentação funcional em Markdown.
+
+---
+
+### 4.2 Convenção de Nomenclatura dos DTOs
+
+Os Data Transfer Objects (DTOs) deverão seguir uma nomenclatura padronizada para facilitar sua identificação na documentação, no código-fonte e no Swagger.
+
+#### 4.2.1 Request DTOs
+
+Representam os dados enviados pelo cliente para a API.
+
+**Padrão:**
+
+```text
+<Operação><Recurso>Request
+```
+
+Exemplos:
+
+- `LoginRequest`
+- `RefreshTokenRequest`
+- `CreateCustomerRequest`
+- `UpdateCustomerRequest`
+- `CreateRoleRequest`
+- `UpdateRoleRequest`
+
+---
+
+#### 4.2.2 Response DTOs
+
+Representam os dados retornados pela API.
+
+**Padrão:**
+
+```text
+<Recurso>Response
+```
+
+Exemplos:
+
+- `LoginResponse`
+- `RefreshTokenResponse`
+- `CustomerResponse`
+- `RoleResponse`
+- `PermissionResponse`
+- `CreditAnalysisResponse`
+- `NotificationResponse`
+
+---
+
+#### 4.2.3 DTOs de Paginação
+
+Endpoints que retornam resultados paginados deverão utilizar um DTO genérico.
+
+**Padrão:**
+
+```text
+PageResponse<T>
+```
+
+Exemplos:
+
+- `PageResponse<CustomerResponse>`
+- `PageResponse<UserResponse>`
+- `PageResponse<CreditAnalysisResponse>`
+
+---
+
+#### 4.2.4 DTOs de Mensagem
+
+Operações que retornam apenas uma confirmação deverão utilizar o DTO:
+
+```text
+MessageResponse
+```
+
+---
+
+#### 4.2.5 DTOs de Erro
+
+As respostas de erro deverão utilizar DTOs específicos.
+
+```text
+ErrorResponse
+
+ValidationErrorResponse
+```
+
+---
+
+### 4.3 Convenção para Respostas HTTP
+
+As respostas da API deverão seguir os seguintes padrões.
+
+| Método HTTP | Resposta Esperada |
+|--------------|-------------------|
+| GET | Retorna o recurso solicitado. |
+| POST | Retorna o recurso criado. |
+| PUT | Retorna o recurso atualizado. |
+| PATCH | Retorna o recurso atualizado. |
+| DELETE | Retorna um `MessageResponse`. |
+
+Sempre que possível, as respostas deverão conter apenas as informações necessárias para o consumidor da API.
+
+---
+
+### 4.4 Convenção para MessageResponse
+
+O DTO `MessageResponse` deverá ser utilizado quando uma operação não retornar um recurso específico, mas apenas uma confirmação da sua execução.
+
+Exemplo de implementação:
+
+```java
+public record MessageResponse(
+    String message
+) {
+}
+```
+
+Exemplo de resposta:
+
+```json
+{
+  "message": "Cliente removido com sucesso."
+}
+```
+
+O `MessageResponse` deverá ser utilizado em operações como:
+
+- Logout.
+- Exclusão de recursos.
+- Operações administrativas.
+- Ações que não retornam um objeto de domínio.
+
+---
+
+### 4.5 Convenção para Respostas de Erro
+
+Todas as respostas de erro da API deverão seguir um padrão único.
+
+#### 4.5.1 ErrorResponse
+
+O `ErrorResponse` deverá ser utilizado para erros gerais da aplicação.
+
+Exemplo:
+
+```json
+{
+  "timestamp": "2026-08-15T14:30:00Z",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Cliente não encontrado.",
+  "path": "/api/v1/customers/1"
+}
+```
+
+Campos:
+
+| Campo | Descrição |
+|--------|-----------|
+| timestamp | Data e hora da ocorrência do erro. |
+| status | Código HTTP retornado. |
+| error | Nome do erro HTTP. |
+| message | Descrição do erro. |
+| path | Endpoint que originou o erro. |
+
+---
+
+#### 4.5.2 ValidationErrorResponse
+
+O `ValidationErrorResponse` deverá ser utilizado quando um ou mais campos enviados pelo cliente forem inválidos.
+
+Exemplo:
+
+```json
+{
+  "timestamp": "2026-08-15T14:30:00Z",
+  "status": 400,
+  "error": "Validation Error",
+  "message": "Um ou mais campos são inválidos.",
+  "path": "/api/v1/customers",
+  "errors": [
+    {
+      "field": "cpf",
+      "message": "CPF inválido."
+    },
+    {
+      "field": "email",
+      "message": "E-mail inválido."
+    }
+  ]
+}
+```
+
+Cada item da coleção `errors` deverá conter:
+
+| Campo | Descrição |
+|--------|-----------|
+| field | Campo inválido. |
+| message | Motivo da validação. |
+
+O `ValidationErrorResponse` deverá ser utilizado para erros de validação de entrada, enquanto o `ErrorResponse` deverá ser utilizado para todos os demais erros da aplicação.
