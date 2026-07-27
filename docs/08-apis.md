@@ -7954,3 +7954,1035 @@ Retorna a renda atualizada.
 
 ⬆️ [Voltar ao índice](#indice)
 
+# 7. Credit Analysis Service API
+
+O **Credit Analysis Service** é responsável pelo gerenciamento do ciclo de vida das solicitações de crédito, desde sua criação até a decisão final.
+
+Este serviço implementa as regras de negócio relacionadas à análise de crédito, executa as políticas de avaliação, determina o risco da operação e registra a decisão final.
+
+A API disponibiliza endpoints para criação e consulta das solicitações de crédito, enquanto o processamento da análise ocorre de forma assíncrona por meio da publicação e consumo de eventos.
+
+---
+
+## 7.1 Visão Geral
+
+O fluxo de uma solicitação de crédito inicia quando um cliente envia uma nova requisição para análise.
+
+Após sua criação, a solicitação é registrada com o status **PENDING** e o evento `CreditRequestCreated` é publicado.
+
+A partir desse momento, o processo de análise é iniciado automaticamente, sem necessidade de intervenção do consumidor da API.
+
+Durante a análise, o serviço:
+
+- Avalia as políticas de crédito.
+- Calcula o Credit Score.
+- Calcula o Debt-to-Income (DTI).
+- Classifica o nível de risco.
+- Gera uma recomendação de crédito.
+- Produz a decisão final.
+
+Ao término do processamento, a decisão fica disponível para consulta e o evento `CreditDecisionMade` é publicado para os demais microserviços da plataforma.
+
+---
+
+## 7.2 Responsabilidades
+
+O Credit Analysis Service é responsável por:
+
+- Criar solicitações de crédito.
+- Consultar solicitações de crédito.
+- Cancelar solicitações de crédito.
+- Executar a análise de crédito.
+- Avaliar políticas de crédito.
+- Calcular indicadores financeiros.
+- Classificar o risco da operação.
+- Gerar recomendações de crédito.
+- Registrar a decisão final.
+- Publicar eventos de domínio relacionados ao processo de análise.
+
+---
+
+## 7.3 Fora do Escopo
+
+Este serviço não é responsável por:
+
+- Autenticação.
+- Autorização.
+- Cadastro de clientes.
+- Gerenciamento de identidade.
+- Auditoria.
+- Envio de notificações.
+- Integrações com Open Finance.
+
+Essas responsabilidades pertencem aos seus respectivos microserviços.
+
+---
+
+## 7.4 Características
+
+O Credit Analysis Service possui as seguintes características:
+
+- API REST.
+- Comunicação utilizando JSON.
+- Autenticação via JWT.
+- Processamento assíncrono.
+- Arquitetura orientada a eventos.
+- Recursos orientados ao domínio.
+- Operações idempotentes quando aplicável.
+- Persistência relacional para dados transacionais.
+
+---
+
+## 7.5 Recursos
+
+A API expõe os seguintes recursos:
+
+| Recurso | Descrição |
+|----------|-----------|
+| `/credit-requests` | Gerenciamento das solicitações de crédito. |
+| `/credit-requests/{id}/analysis` | Consulta da análise da solicitação. |
+| `/credit-requests/{id}/decision` | Consulta da decisão da solicitação. |
+
+Embora **CreditRequest**, **CreditAnalysis** e **CreditDecision** sejam agregados independentes no domínio, a API expõe a análise e a decisão como sub-recursos da solicitação de crédito.
+
+Essa abordagem simplifica o consumo da API e representa o fluxo natural do processo de negócio.
+
+---
+
+## 7.6 Fluxo Geral
+
+```text
+Cliente
+    │
+    ▼
+POST /credit-requests
+    │
+    ▼
+CreditRequest
+(Status = PENDING)
+    │
+    ▼
+Evento CreditRequestCreated
+    │
+    ▼
+Início automático da análise
+    │
+    ▼
+Execução das políticas
+    │
+    ▼
+Cálculo dos indicadores
+    │
+    ▼
+Classificação do risco
+    │
+    ▼
+Geração da decisão
+    │
+    ▼
+Evento CreditDecisionMade
+    │
+    ├────────► Audit Service
+    │
+    └────────► Notification Service
+```
+
+O consumidor da API participa apenas da criação e da consulta da solicitação.
+
+Todo o fluxo de análise ocorre internamente e de forma assíncrona.
+
+---
+
+## 7.7 Convenções da API
+
+### 7.7.1 Identificadores
+
+Todos os recursos utilizam identificadores no formato UUID.
+
+Exemplo:
+
+```text
+550e8400-e29b-41d4-a716-446655440000
+```
+
+---
+
+### 7.7.2 Datas
+
+Todas as datas seguem o padrão ISO 8601 em UTC.
+
+Exemplo:
+
+```text
+2026-07-27T14:35:00Z
+```
+
+---
+
+### 7.7.3 Paginação
+
+As operações de listagem suportam paginação.
+
+| Parâmetro | Descrição |
+|-----------|-----------|
+| page | Número da página. |
+| size | Quantidade de registros por página. |
+| sort | Campo utilizado para ordenação. |
+
+---
+
+### 7.7.4 Ordenação
+
+A ordenação segue o padrão:
+
+```text
+sort=campo,direction
+```
+
+Exemplo:
+
+```text
+sort=requestedAt,desc
+```
+
+---
+
+### 7.7.5 Autenticação
+
+Todos os endpoints protegidos exigem autenticação via Bearer Token (JWT).
+
+Exemplo:
+
+```http
+Authorization: Bearer <token>
+```
+
+---
+
+### 7.7.6 Formato das Respostas
+
+As respostas são serializadas em JSON.
+
+Os códigos HTTP seguem as convenções REST e representam o resultado do processamento da requisição.
+
+---
+
+## 7.8 Endpoints
+
+### 7.8.1 Solicitações de Crédito (Credit Requests)
+
+Os endpoints de solicitações de crédito permitem criar, consultar, listar e cancelar solicitações de crédito.
+
+A criação de uma solicitação inicia automaticamente o processo de análise de crédito por meio da publicação de eventos de domínio.
+
+---
+
+#### 7.8.1.1 POST /credit-requests
+
+Cria uma nova solicitação de crédito.
+
+Após a criação da solicitação, o serviço publica o evento `CreditRequestCreated`, iniciando automaticamente o processo de análise.
+
+##### Headers
+
+| Nome | Obrigatório | Descrição |
+|------|-------------|-----------|
+| Authorization | Sim | Bearer Token (JWT). |
+| Content-Type | Sim | `application/json`. |
+
+##### Request Body
+
+```json
+{
+  "customerId": "550e8400-e29b-41d4-a716-446655440000",
+  "requestedAmount": 50000.00,
+  "currency": "BRL",
+  "termInMonths": 48,
+  "purpose": "VEHICLE"
+}
+```
+
+##### Campos da Requisição
+
+| Campo | Tipo | Obrigatório | Descrição |
+|--------|------|-------------|-----------|
+| customerId | UUID | Sim | Identificador do cliente. |
+| requestedAmount | Decimal | Sim | Valor solicitado para crédito. |
+| currency | String | Sim | Código da moeda conforme ISO 4217. |
+| termInMonths | Integer | Sim | Prazo solicitado em meses. |
+| purpose | CreditPurpose | Sim | Finalidade da solicitação de crédito. |
+
+##### Response
+
+**201 Created**
+
+```json
+{
+  "id": "f2b7f846-9565-43d2-9d0e-7ddf52d936dd",
+  "status": "PENDING",
+  "requestedAt": "2026-07-27T14:35:00Z"
+}
+```
+
+##### Regras de Negócio
+
+- O cliente deve existir.
+- O valor solicitado deve ser maior que zero.
+- O prazo solicitado deve estar dentro dos limites permitidos.
+- A finalidade da solicitação deve ser válida.
+- A solicitação é criada inicialmente com o status `PENDING`.
+- A análise de crédito é iniciada automaticamente após a criação da solicitação.
+
+##### Possíveis Respostas
+
+| Código | Descrição |
+|---------|-----------|
+| 201 Created | Solicitação criada com sucesso. |
+| 400 Bad Request | Dados inválidos. |
+| 401 Unauthorized | Usuário não autenticado. |
+| 403 Forbidden | Usuário sem permissão. |
+| 404 Not Found | Cliente não encontrado. |
+| 409 Conflict | Violação de regra de negócio. |
+| 422 Unprocessable Entity | Dados válidos sintaticamente, porém inválidos para o domínio. |
+| 500 Internal Server Error | Erro interno do servidor. |
+
+---
+
+#### 7.8.1.2 GET /credit-requests/{id}
+
+Consulta uma solicitação de crédito pelo seu identificador.
+
+##### Headers
+
+| Nome | Obrigatório | Descrição |
+|------|-------------|-----------|
+| Authorization | Sim | Bearer Token (JWT). |
+
+##### Path Parameters
+
+| Nome | Tipo | Descrição |
+|------|------|-----------|
+| id | UUID | Identificador da solicitação de crédito. |
+
+##### Response
+
+**200 OK**
+
+```json
+{
+  "id": "f2b7f846-9565-43d2-9d0e-7ddf52d936dd",
+  "customerId": "550e8400-e29b-41d4-a716-446655440000",
+  "requestedAmount": 50000.00,
+  "currency": "BRL",
+  "termInMonths": 48,
+  "purpose": "VEHICLE",
+  "status": "IN_ANALYSIS",
+  "requestedAt": "2026-07-27T14:35:00Z"
+}
+```
+
+##### Possíveis Respostas
+
+| Código | Descrição |
+|---------|-----------|
+| 200 OK | Solicitação localizada com sucesso. |
+| 401 Unauthorized | Usuário não autenticado. |
+| 403 Forbidden | Usuário sem permissão. |
+| 404 Not Found | Solicitação não encontrada. |
+| 500 Internal Server Error | Erro interno do servidor. |
+
+---
+
+#### 7.8.1.3 GET /credit-requests
+
+Lista solicitações de crédito.
+
+##### Headers
+
+| Nome | Obrigatório | Descrição |
+|------|-------------|-----------|
+| Authorization | Sim | Bearer Token (JWT). |
+
+##### Query Parameters
+
+| Nome | Tipo | Obrigatório | Descrição |
+|------|------|-------------|-----------|
+| customerId | UUID | Não | Filtra pelo cliente. |
+| status | CreditRequestStatus | Não | Filtra pelo status da solicitação. |
+| purpose | CreditPurpose | Não | Filtra pela finalidade do crédito. |
+| requestedAfter | DateTime | Não | Data inicial da pesquisa. |
+| requestedBefore | DateTime | Não | Data final da pesquisa. |
+| page | Integer | Não | Número da página. |
+| size | Integer | Não | Quantidade de registros por página. |
+| sort | String | Não | Critério de ordenação. |
+
+##### Response
+
+**200 OK**
+
+```json
+{
+  "content": [
+    {
+      "id": "f2b7f846-9565-43d2-9d0e-7ddf52d936dd",
+      "status": "COMPLETED",
+      "requestedAmount": 50000.00,
+      "purpose": "VEHICLE",
+      "requestedAt": "2026-07-27T14:35:00Z"
+    }
+  ],
+  "page": 0,
+  "size": 20,
+  "totalElements": 1,
+  "totalPages": 1
+}
+```
+
+##### Possíveis Respostas
+
+| Código | Descrição |
+|---------|-----------|
+| 200 OK | Consulta realizada com sucesso. |
+| 401 Unauthorized | Usuário não autenticado. |
+| 403 Forbidden | Usuário sem permissão. |
+| 500 Internal Server Error | Erro interno do servidor. |
+
+---
+
+#### 7.8.1.4 PATCH /credit-requests/{id}/cancel
+
+Cancela uma solicitação de crédito.
+
+O cancelamento representa uma operação de negócio e não a exclusão do recurso.
+
+##### Headers
+
+| Nome | Obrigatório | Descrição |
+|------|-------------|-----------|
+| Authorization | Sim | Bearer Token (JWT). |
+
+##### Path Parameters
+
+| Nome | Tipo | Descrição |
+|------|------|-----------|
+| id | UUID | Identificador da solicitação de crédito. |
+
+##### Response
+
+**204 No Content**
+
+##### Regras de Negócio
+
+- Apenas solicitações elegíveis podem ser canceladas.
+- Solicitações concluídas não podem ser canceladas.
+- O cancelamento publica o evento `CreditRequestCancelled`.
+
+##### Possíveis Respostas
+
+| Código | Descrição |
+|---------|-----------|
+| 204 No Content | Solicitação cancelada com sucesso. |
+| 401 Unauthorized | Usuário não autenticado. |
+| 403 Forbidden | Usuário sem permissão. |
+| 404 Not Found | Solicitação não encontrada. |
+| 409 Conflict | A solicitação não pode mais ser cancelada. |
+| 500 Internal Server Error | Erro interno do servidor. |
+
+---
+
+### 7.8.2 Análise de Crédito (Credit Analysis)
+
+A análise de crédito é iniciada automaticamente após a criação de uma solicitação de crédito.
+
+Não existe endpoint público para iniciar uma análise manualmente.
+
+---
+
+#### 7.8.2.1 GET /credit-requests/{id}/analysis
+
+Consulta o resultado da análise associada a uma solicitação de crédito.
+
+##### Headers
+
+| Nome | Obrigatório | Descrição |
+|------|-------------|-----------|
+| Authorization | Sim | Bearer Token (JWT). |
+
+##### Path Parameters
+
+| Nome | Tipo | Descrição |
+|------|------|-----------|
+| id | UUID | Identificador da solicitação de crédito. |
+
+##### Response
+
+**200 OK**
+
+```json
+{
+  "status": "COMPLETED",
+  "creditScore": 782,
+  "debtToIncome": 0.28,
+  "riskLevel": "LOW",
+  "policyEvaluations": [
+    {
+      "policy": "MINIMUM_AGE",
+      "result": "PASSED"
+    },
+    {
+      "policy": "MINIMUM_INCOME",
+      "result": "PASSED"
+    },
+    {
+      "policy": "MINIMUM_CREDIT_SCORE",
+      "result": "PASSED"
+    }
+  ],
+  "startedAt": "2026-07-27T14:35:05Z",
+  "finishedAt": "2026-07-27T14:35:08Z"
+}
+```
+
+##### Campos da Resposta
+
+| Campo | Tipo | Descrição |
+|--------|------|-----------|
+| status | CreditAnalysisStatus | Situação atual da análise. |
+| creditScore | Integer | Pontuação de crédito calculada. |
+| debtToIncome | Decimal | Índice Debt-to-Income (DTI). |
+| riskLevel | RiskLevel | Classificação do risco da operação. |
+| policyEvaluations | Array | Resultado da avaliação das políticas de crédito. |
+| startedAt | DateTime | Data e hora de início da análise. |
+| finishedAt | DateTime | Data e hora de conclusão da análise. |
+
+##### Estrutura das Políticas
+
+| Campo | Tipo | Descrição |
+|--------|------|-----------|
+| policy | PolicyType | Política de crédito avaliada. |
+| result | PolicyReasonCode | Resultado da avaliação da política. |
+
+##### Regras de Negócio
+
+- A análise é iniciada automaticamente após a criação da solicitação de crédito.
+- Enquanto a análise estiver em processamento, o status será `RUNNING`.
+- Após a conclusão da análise, o status será `COMPLETED`.
+- Caso ocorra uma falha durante o processamento, o status será `FAILED`.
+- A análise representa apenas o processo de avaliação da solicitação e não contém a decisão final de crédito.
+
+##### Possíveis Respostas
+
+| Código | Descrição |
+|---------|-----------|
+| 200 OK | Análise localizada com sucesso. |
+| 401 Unauthorized | Usuário não autenticado. |
+| 403 Forbidden | Usuário sem permissão para acessar o recurso. |
+| 404 Not Found | Solicitação de crédito não encontrada ou análise ainda inexistente. |
+| 500 Internal Server Error | Erro interno do servidor. |
+
+---
+
+### 7.8.3 Decisão de Crédito (Credit Decision)
+
+A decisão de crédito representa o resultado final produzido pela análise.
+
+Ela é criada automaticamente após a conclusão do processamento e permanece imutável.
+
+---
+
+#### 7.8.3.1 GET /credit-requests/{id}/decision
+
+Consulta a decisão final de uma solicitação de crédito.
+
+##### Headers
+
+| Nome | Obrigatório | Descrição |
+|------|-------------|-----------|
+| Authorization | Sim | Bearer Token (JWT). |
+
+##### Path Parameters
+
+| Nome | Tipo | Descrição |
+|------|------|-----------|
+| id | UUID | Identificador da solicitação de crédito. |
+
+##### Response
+
+**200 OK**
+
+```json
+{
+  "decision": "APPROVED",
+  "riskLevel": "LOW",
+  "approvedAmount": 50000.00,
+  "approvedTermInMonths": 48,
+  "interestRate": 1.29,
+  "createdAt": "2026-07-27T14:35:08Z"
+}
+```
+
+##### Campos da Resposta
+
+| Campo | Tipo | Descrição |
+|--------|------|-----------|
+| decision | Decision | Resultado final da análise de crédito. |
+| riskLevel | RiskLevel | Classificação de risco considerada para a decisão. |
+| approvedAmount | Decimal | Valor aprovado para contratação. |
+| approvedTermInMonths | Integer | Prazo aprovado em meses. |
+| interestRate | Decimal | Taxa de juros aprovada. |
+| createdAt | DateTime | Data e hora da geração da decisão. |
+
+##### Regras de Negócio
+
+- Cada análise de crédito gera exatamente uma decisão.
+- A decisão é criada automaticamente após a conclusão da análise.
+- Após registrada, a decisão é imutável.
+- Uma nova análise gera uma nova decisão, preservando o histórico das decisões anteriores.
+- Os valores aprovados são definidos com base no resultado da análise de crédito e nas políticas de negócio aplicadas.
+
+##### Possíveis Respostas
+
+| Código | Descrição |
+|---------|-----------|
+| 200 OK | Decisão localizada com sucesso. |
+| 401 Unauthorized | Usuário não autenticado. |
+| 403 Forbidden | Usuário sem permissão para acessar o recurso. |
+| 404 Not Found | Solicitação de crédito não encontrada ou decisão ainda inexistente. |
+| 500 Internal Server Error | Erro interno do servidor. |
+
+---
+
+## 7.9 Códigos HTTP
+
+O Credit Analysis Service utiliza códigos de status HTTP padronizados para indicar o resultado do processamento das requisições.
+
+| Código | Nome | Descrição |
+|---------|------|-----------|
+| 200 | OK | Requisição processada com sucesso. |
+| 201 | Created | Recurso criado com sucesso. |
+| 204 | No Content | Operação realizada com sucesso sem conteúdo de resposta. |
+| 400 | Bad Request | Dados inválidos ou requisição malformada. |
+| 401 | Unauthorized | Usuário não autenticado. |
+| 403 | Forbidden | Usuário autenticado, porém sem permissão para acessar o recurso. |
+| 404 | Not Found | Recurso solicitado não encontrado. |
+| 409 | Conflict | Violação de regra de negócio. |
+| 422 | Unprocessable Entity | A requisição é válida sintaticamente, mas viola regras do domínio. |
+| 500 | Internal Server Error | Erro interno inesperado. |
+
+---
+
+## 7.10 Eventos Publicados
+
+Após a conclusão das operações de negócio, o Credit Analysis Service publica eventos para permitir a comunicação assíncrona entre os microserviços da plataforma.
+
+### CreditRequestCreated
+
+Publicado após a criação de uma nova solicitação de crédito.
+
+#### Payload
+
+```json
+{
+  "eventId": "6afbb3ab-5d55-4e2f-88db-f6cf5dc17cf9",
+  "occurredAt": "2026-07-27T14:35:00Z",
+  "creditRequestId": "550e8400-e29b-41d4-a716-446655440000",
+  "customerId": "7d80f39d-04d4-4f2b-a1cf-dfdce0c58b0e"
+}
+```
+
+#### Consumidores
+
+- Credit Analysis Worker
+
+---
+
+### CreditRequestCancelled
+
+Publicado quando uma solicitação de crédito é cancelada.
+
+#### Payload
+
+```json
+{
+  "eventId": "813d5086-c4b6-4c70-a0f7-9b8d1d69fc0d",
+  "occurredAt": "2026-07-27T15:02:18Z",
+  "creditRequestId": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+#### Consumidores
+
+- Audit Service
+- Notification Service
+
+---
+
+### CreditDecisionMade
+
+Publicado após a conclusão da análise e geração da decisão final.
+
+#### Payload
+
+```json
+{
+  "eventId": "0d737e6c-4db2-4cb4-bf80-68d2c14fa50e",
+  "occurredAt": "2026-07-27T14:35:08Z",
+  "creditRequestId": "550e8400-e29b-41d4-a716-446655440000",
+  "customerId": "7d80f39d-04d4-4f2b-a1cf-dfdce0c58b0e",
+  "decision": "APPROVED",
+  "approvedAmount": 50000.00,
+  "approvedTermInMonths": 48,
+  "interestRate": 1.29
+}
+```
+
+#### Consumidores
+
+- Audit Service
+- Notification Service
+
+---
+
+## 7.11 Considerações Arquiteturais
+
+O Credit Analysis Service foi projetado seguindo princípios de Domain-Driven Design (DDD), arquitetura orientada a eventos e APIs REST.
+
+As principais decisões arquiteturais adotadas são:
+
+- O processamento da análise de crédito ocorre de forma assíncrona após a criação da solicitação.
+- A API expõe DTOs específicos para consumo externo, sem expor diretamente entidades ou Value Objects do domínio.
+- Os Aggregates `CreditRequest`, `CreditAnalysis` e `CreditDecision` permanecem independentes no domínio, embora a API os represente como recursos relacionados.
+- A comunicação entre microserviços ocorre por meio da publicação de eventos de domínio.
+- A decisão de crédito é imutável após sua criação.
+- Cada nova análise gera uma nova decisão, preservando o histórico.
+- A API segue os princípios REST utilizando recursos orientados ao domínio.
+- O projeto não adota HATEOAS, conforme documentado na ADR correspondente.
+
+---
+
+# 8. Audit Service API
+
+## 8.1 Visão Geral
+
+O Audit Service é responsável por disponibilizar uma API para consulta dos eventos de auditoria registrados na plataforma.
+
+Os registros são criados exclusivamente pelo consumo de eventos publicados pelos demais microserviços e armazenados de forma imutável.
+
+Esta API possui apenas operações de leitura, não sendo possível criar, alterar ou remover eventos de auditoria por meio de requisições HTTP.
+
+---
+
+## 8.2 Responsabilidades
+
+O Audit Service é responsável por:
+
+- Disponibilizar o histórico de auditoria da plataforma.
+- Permitir consultas individuais de eventos.
+- Permitir listagem paginada de eventos.
+- Permitir filtragem por diferentes critérios.
+- Preservar a rastreabilidade dos eventos registrados.
+
+---
+
+## 8.3 Fora do Escopo
+
+Não é responsabilidade do Audit Service:
+
+- Criar eventos de auditoria via API.
+- Alterar registros de auditoria.
+- Excluir registros de auditoria.
+- Executar regras de negócio dos demais microserviços.
+- Publicar novos eventos.
+
+---
+
+## 8.4 Características
+
+- API REST.
+- Comunicação em JSON.
+- Versionamento via URI (`/api/v1`).
+- Autenticação JWT.
+- Paginação.
+- Ordenação.
+- Filtragem.
+- Registros imutáveis.
+
+---
+
+## 8.5 Recursos
+
+- `/audit-events`
+
+---
+
+## 8.6 Fluxo Geral
+
+```text
+Customer Service
+        │
+        ├────────────► CustomerCreated
+        │
+        ├────────────► CustomerUpdated
+        │
+Credit Analysis Service
+        │
+        ├────────────► CreditRequestCreated
+        ├────────────► CreditRequestCancelled
+        └────────────► CreditDecisionMade
+                         │
+                         ▼
+                  Audit Service
+                         │
+                  Persiste AuditEvent
+                         │
+                         ▼
+                 API de Consulta
+```
+
+---
+
+## 8.7 Convenções da API
+
+### 8.7.1 Identificadores
+
+Todos os identificadores utilizam UUID versão 4.
+
+---
+
+### 8.7.2 Datas
+
+Todos os campos de data seguem o padrão ISO-8601 UTC.
+
+Exemplo:
+
+```text
+2026-08-21T18:35:12Z
+```
+
+---
+
+### 8.7.3 Paginação
+
+As operações de listagem utilizam os seguintes parâmetros:
+
+| Parâmetro | Descrição |
+|-----------|-----------|
+| `page` | Número da página. |
+| `size` | Quantidade de registros por página. |
+
+---
+
+### 8.7.4 Ordenação
+
+A ordenação utiliza o parâmetro:
+
+```text
+sort=recordedAt,desc
+```
+
+---
+
+### 8.7.5 Autenticação
+
+Todos os endpoints exigem autenticação via JWT Bearer Token.
+
+---
+
+### 8.7.6 Formato das Respostas
+
+Todas as respostas são retornadas em formato JSON.
+
+---
+
+## 8.8 Endpoints
+
+### 8.8.1 Eventos de Auditoria
+
+#### 8.8.1.1 GET /audit-events
+
+##### Objetivo
+
+Retorna uma lista paginada de eventos de auditoria.
+
+---
+
+##### Query Parameters
+
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|------------|------|-------------|-----------|
+| `page` | Integer | Não | Número da página. |
+| `size` | Integer | Não | Quantidade de registros por página. |
+| `sort` | String | Não | Ordenação dos resultados. |
+| `eventType` | String | Não | Filtra por tipo do evento. |
+| `aggregateType` | String | Não | Filtra por tipo do agregado. |
+| `aggregateId` | UUID | Não | Filtra por um agregado específico. |
+| `sourceService` | String | Não | Filtra pelo microserviço de origem. |
+| `correlationId` | UUID | Não | Filtra por fluxo de negócio. |
+| `occurredAfter` | Instant | Não | Retorna eventos ocorridos após a data informada. |
+| `occurredBefore` | Instant | Não | Retorna eventos ocorridos antes da data informada. |
+
+---
+
+##### Exemplo de Requisição
+
+```http
+GET /api/v1/audit-events?page=0&size=20&sort=recordedAt,desc
+Authorization: Bearer <token>
+```
+
+---
+
+##### Response
+
+```json
+{
+  "content": [
+    {
+      "id": "4d87d44b-f0bb-43ef-8ef5-4e9d9f2d53f1",
+      "eventId": "8b2bce76-c48d-4c2d-8dd8-1b77f40d52a4",
+      "correlationId": "39a53864-ec0b-4e83-8e78-29d4e3af3ef8",
+      "eventType": "CREDIT_DECISION_MADE",
+      "version": 1,
+      "sourceService": "CREDIT_ANALYSIS",
+      "aggregateType": "CREDIT_DECISION",
+      "aggregateId": "f7fd4df8-6f54-4b6f-9cb7-f31eb9e0d53f",
+      "occurredAt": "2026-08-21T18:10:01Z",
+      "recordedAt": "2026-08-21T18:10:02Z"
+    }
+  ],
+  "page": 0,
+  "size": 20,
+  "totalElements": 1,
+  "totalPages": 1
+}
+```
+
+---
+
+##### Regras de Negócio
+
+- Apenas eventos persistidos são retornados.
+- O payload não é incluído na listagem para reduzir o volume de dados trafegados.
+- Os resultados são paginados.
+- É possível combinar múltiplos filtros na mesma consulta.
+
+---
+
+##### Possíveis Respostas
+
+| Código | Descrição |
+|---------|-----------|
+| `200 OK` | Consulta realizada com sucesso. |
+| `401 Unauthorized` | Usuário não autenticado. |
+| `403 Forbidden` | Usuário sem permissão de acesso. |
+
+---
+
+#### 8.8.1.2 GET /audit-events/{id}
+
+##### Objetivo
+
+Retorna um evento de auditoria específico.
+
+---
+
+##### Path Parameters
+
+| Parâmetro | Tipo | Descrição |
+|------------|------|-----------|
+| `id` | UUID | Identificador do evento de auditoria. |
+
+---
+
+##### Exemplo de Requisição
+
+```http
+GET /api/v1/audit-events/4d87d44b-f0bb-43ef-8ef5-4e9d9f2d53f1
+Authorization: Bearer <token>
+```
+
+---
+
+##### Response
+
+```json
+{
+  "id": "4d87d44b-f0bb-43ef-8ef5-4e9d9f2d53f1",
+  "eventId": "8b2bce76-c48d-4c2d-8dd8-1b77f40d52a4",
+  "correlationId": "39a53864-ec0b-4e83-8e78-29d4e3af3ef8",
+  "eventType": "CREDIT_DECISION_MADE",
+  "version": 1,
+  "sourceService": "CREDIT_ANALYSIS",
+  "aggregateType": "CREDIT_DECISION",
+  "aggregateId": "f7fd4df8-6f54-4b6f-9cb7-f31eb9e0d53f",
+  "payload": {
+    "decision": "APPROVED",
+    "approvedAmount": 50000.00,
+    "interestRate": 1.29
+  },
+  "occurredAt": "2026-08-21T18:10:01Z",
+  "recordedAt": "2026-08-21T18:10:02Z"
+}
+```
+
+---
+
+##### Regras de Negócio
+
+- O payload retornado corresponde exatamente ao evento recebido do barramento.
+- O conteúdo do payload nunca é modificado pelo Audit Service.
+- Eventos inexistentes retornam **404 Not Found**.
+
+---
+
+##### Possíveis Respostas
+
+| Código | Descrição |
+|---------|-----------|
+| `200 OK` | Evento encontrado. |
+| `401 Unauthorized` | Usuário não autenticado. |
+| `403 Forbidden` | Usuário sem permissão de acesso. |
+| `404 Not Found` | Evento não encontrado. |
+
+---
+
+## 8.9 Códigos HTTP
+
+| Código | Descrição |
+|---------|-----------|
+| `200 OK` | Requisição processada com sucesso. |
+| `400 Bad Request` | Parâmetros inválidos. |
+| `401 Unauthorized` | Usuário não autenticado. |
+| `403 Forbidden` | Usuário sem permissão. |
+| `404 Not Found` | Evento não encontrado. |
+| `500 Internal Server Error` | Erro interno da aplicação. |
+
+---
+
+## 8.10 Eventos Consumidos
+
+| Evento | Serviço de Origem |
+|---------|-------------------|
+| CustomerCreated | Customer Service |
+| CustomerUpdated | Customer Service |
+| CustomerIncomeRegistered | Customer Service |
+| CustomerIncomeUpdated | Customer Service |
+| CustomerIncomeClosed | Customer Service |
+| CreditRequestCreated | Credit Analysis Service |
+| CreditRequestCancelled | Credit Analysis Service |
+| CreditDecisionMade | Credit Analysis Service |
+
+---
+
+## 8.11 Considerações Arquiteturais
+
+- O Audit Service atua exclusivamente como consumidor de eventos.
+- Todos os registros são criados de forma assíncrona por meio do barramento de mensagens.
+- Os eventos persistidos são imutáveis.
+- O payload é armazenado como `JsonNode`, preservando integralmente a estrutura original do evento recebido.
+- A separação entre `eventId` e `id` diferencia o identificador do evento publicado do identificador do registro persistido e permite implementar processamento idempotente.
+- O `correlationId` permite rastrear eventos pertencentes ao mesmo fluxo de negócio em arquiteturas distribuídas.
+- Os campos `occurredAt` e `recordedAt` possibilitam análises de latência, observabilidade e rastreabilidade.
+- A API expõe exclusivamente operações de consulta (`GET`), reforçando que o Audit Service não é responsável pela criação, alteração ou exclusão de registros de auditoria.
+
+
