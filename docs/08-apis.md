@@ -7401,3 +7401,556 @@ A plataforma utiliza inativação lógica (*soft delete*) para preservar o hist�
 
 ⬆️ [Voltar ao índice](#indice)
 
+## 6.6 Vínculos Empregatícios
+
+### 6.6.1 Objetivo
+
+O recurso **Vínculos Empregatícios** é responsável por representar o histórico profissional do cliente.
+
+Cada vínculo registra exclusivamente a relação entre o cliente e uma empresa, não armazenando informações financeiras. As rendas provenientes desse vínculo serão representadas pelo recurso **Rendas (Income)**, que é a única fonte de verdade para informações financeiras relacionadas aos rendimentos do cliente.
+
+Um cliente pode possuir nenhum, um ou vários vínculos empregatícios ao longo da vida.
+
+### Recursos
+
+- Adicionar vínculo empregatício.
+- Listar vínculos empregatícios.
+- Buscar vínculo empregatício por identificador.
+- Atualizar vínculo empregatício.
+- Encerrar vínculo empregatício.
+
+---
+
+### 6.6.2 Adicionar Vínculo Empregatício
+
+#### Objetivo
+
+Cadastrar um novo vínculo empregatício para um cliente.
+
+#### Microsserviço
+
+Customer Service
+
+#### Recurso
+
+Employment
+
+#### Versão da API
+
+v1
+
+#### Endpoint
+
+```http
+POST /customers/{customerId}/employments
+```
+
+#### Autenticação
+
+Bearer Token (JWT)
+
+#### Permissões
+
+- CUSTOMER_WRITE
+
+#### Cabeçalhos
+
+```http
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+#### Parâmetros de Caminho
+
+| Nome | Tipo | Obrigatório | Descrição |
+|------|------|-------------|-----------|
+| customerId | UUID | Sim | Identificador do cliente. |
+
+#### Corpo da Requisição
+
+```json
+{
+    "companyName": "Tech Solutions",
+    "companyTaxId": "12345678000195",
+    "position": "Backend Developer",
+    "employmentType": "CLT",
+    "startDate": "2024-01-10"
+}
+```
+
+#### Fluxo da Requisição
+
+1. Validar autenticação.
+2. Verificar existência do cliente.
+3. Validar dados informados.
+4. Criar vínculo empregatício.
+5. Retornar o vínculo criado.
+
+#### Resposta de Sucesso
+
+**HTTP 201 Created**
+
+#### Exemplo de Resposta
+
+```json
+{
+    "id": "uuid",
+    "companyName": "Tech Solutions",
+    "companyTaxId": "12345678000195",
+    "position": "Backend Developer",
+    "employmentType": "CLT",
+    "startDate": "2024-01-10",
+    "endDate": null,
+    "createdAt": "2026-07-26T15:20:10Z",
+    "updatedAt": "2026-07-26T15:20:10Z"
+}
+```
+
+#### Códigos HTTP
+
+| Código | Descrição |
+|---------|-----------|
+| 201 | Vínculo criado com sucesso. |
+| 400 | Dados inválidos. |
+| 401 | Não autenticado. |
+| 403 | Sem permissão. |
+| 404 | Cliente não encontrado. |
+| 409 | Conflito de negócio. |
+
+#### Regras de Negócio
+
+- O cliente deve existir.
+- A data de admissão é obrigatória.
+- O vínculo inicia ativo quando `endDate` é nulo.
+- Não são armazenadas informações financeiras neste recurso.
+
+#### Observações
+
+- O histórico profissional é preservado.
+- As rendas associadas ao vínculo serão cadastradas no recurso **Income**.
+
+⬆️ [Voltar ao índice](#indice)
+
+---
+
+### 6.6.3 Listar Vínculos Empregatícios
+
+```
+GET /customers/{customerId}/employments
+```
+
+Retorna todos os vínculos empregatícios cadastrados para o cliente.
+
+⬆️ [Voltar ao índice](#indice)
+
+---
+
+### 6.6.4 Buscar Vínculo Empregatício por Identificador
+
+```
+GET /customers/{customerId}/employments/{employmentId}
+```
+
+Retorna um vínculo empregatício específico.
+
+⬆️ [Voltar ao índice](#indice)
+
+---
+
+### 6.6.5 Atualizar Vínculo Empregatício
+
+```
+PUT /customers/{customerId}/employments/{employmentId}
+```
+
+Atualiza as informações do vínculo empregatício.
+
+Campos permitidos:
+
+- companyName
+- companyTaxId
+- position
+- employmentType
+- startDate
+
+Não é permitido atualizar o identificador do vínculo.
+
+⬆️ [Voltar ao índice](#indice)
+
+---
+
+### 6.6.6 Encerrar Vínculo Empregatício
+
+#### Endpoint
+
+```http
+PATCH /customers/{customerId}/employments/{employmentId}/termination
+```
+
+#### Objetivo
+
+Registrar o encerramento do vínculo empregatício.
+
+#### Corpo da Requisição
+
+```json
+{
+    "endDate": "2026-08-31"
+}
+```
+
+#### Regras de Negócio
+
+- O vínculo deve existir.
+- O vínculo deve pertencer ao cliente informado.
+- O vínculo não pode estar encerrado.
+- A data de encerramento deve ser igual ou posterior à data de admissão.
+- O histórico do vínculo é preservado.
+- O vínculo nunca é removido fisicamente.
+
+#### Resposta de Sucesso
+
+**HTTP 200 OK**
+
+Retorna o vínculo empregatício atualizado.
+
+⬆️ [Voltar ao índice](#indice)
+
+## 6.7 Rendas
+
+### 6.7.1 Objetivo
+
+O recurso **Rendas** é responsável por representar todas as fontes de renda declaradas pelo cliente que poderão ser utilizadas durante o processo de análise de crédito.
+
+Cada registro representa uma única fonte de renda.
+
+Este recurso é a única fonte de verdade para informações financeiras relacionadas aos rendimentos do cliente.
+
+### Recursos
+
+- Adicionar renda.
+- Listar rendas.
+- Buscar renda por identificador.
+- Atualizar renda.
+- Encerrar renda.
+
+---
+
+### 6.7.2 Adicionar Renda
+
+#### Objetivo
+
+Cadastrar uma nova fonte de renda para um cliente.
+
+#### Microsserviço
+
+Customer Service
+
+#### Recurso
+
+Income
+
+#### Versão da API
+
+v1
+
+#### Endpoint
+
+```http
+POST /customers/{customerId}/incomes
+```
+
+#### Autenticação
+
+Bearer Token (JWT)
+
+#### Permissões
+
+- CUSTOMER_WRITE
+
+#### Cabeçalhos
+
+```http
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+#### Parâmetros de Caminho
+
+| Nome | Tipo | Obrigatório | Descrição |
+|------|------|-------------|-----------|
+| customerId | UUID | Sim | Identificador do cliente. |
+
+#### Corpo da Requisição
+
+```json
+{
+    "incomeType": "SALARY",
+    "sourceName": "Tech Solutions Ltda.",
+    "amount": 8500.00,
+    "currency": "BRL",
+    "frequency": "MONTHLY",
+    "incomeVerificationStatus": "DECLARED",
+    "startDate": "2024-01-10",
+    "employmentId": "uuid"
+}
+```
+
+#### Fluxo da Requisição
+
+1. Validar autenticação.
+2. Verificar existência do cliente.
+3. Validar os dados informados.
+4. Verificar o vínculo empregatício, quando informado.
+5. Cadastrar a renda.
+6. Retornar a renda criada.
+
+#### Resposta de Sucesso
+
+**HTTP 201 Created**
+
+#### Exemplo de Resposta
+
+```json
+{
+    "id": "uuid",
+    "incomeType": "SALARY",
+    "sourceName": "Tech Solutions Ltda.",
+    "amount": 8500.00,
+    "currency": "BRL",
+    "frequency": "MONTHLY",
+    "incomeVerificationStatus": "DECLARED",
+    "startDate": "2024-01-10",
+    "endDate": null,
+    "employmentId": "uuid",
+    "createdAt": "2026-07-26T15:20:10Z",
+    "updatedAt": "2026-07-26T15:20:10Z"
+}
+```
+
+#### Códigos HTTP
+
+| Código | Descrição |
+|---------|-----------|
+| 201 | Renda cadastrada com sucesso. |
+| 400 | Dados inválidos. |
+| 401 | Não autenticado. |
+| 403 | Sem permissão. |
+| 404 | Cliente ou vínculo empregatício não encontrado. |
+| 409 | Conflito de negócio. |
+
+#### Regras de Negócio
+
+- O cliente deve existir.
+- O valor da renda deve ser maior que zero.
+- A moeda deve ser suportada pelo sistema.
+- O vínculo empregatício, quando informado, deve pertencer ao cliente.
+- O recurso representa uma única fonte de renda.
+
+#### Observações
+
+- As informações financeiras são centralizadas neste recurso.
+- Não são armazenadas informações profissionais.
+
+⬆️ [Voltar ao índice](#indice)
+
+---
+
+### 6.7.3 Listar Rendas
+
+#### Objetivo
+
+Listar todas as rendas cadastradas para um cliente.
+
+#### Microsserviço
+
+Customer Service
+
+#### Recurso
+
+Income
+
+#### Versão da API
+
+v1
+
+#### Endpoint
+
+```http
+GET /customers/{customerId}/incomes
+```
+
+#### Resposta de Sucesso
+
+**HTTP 200 OK**
+
+Retorna todas as rendas cadastradas para o cliente.
+
+#### Códigos HTTP
+
+| Código | Descrição |
+|---------|-----------|
+| 200 | Consulta realizada com sucesso. |
+| 401 | Não autenticado. |
+| 403 | Sem permissão. |
+| 404 | Cliente não encontrado. |
+
+⬆️ [Voltar ao índice](#indice)
+
+---
+
+### 6.7.4 Buscar Renda por Identificador
+
+#### Objetivo
+
+Buscar uma renda específica.
+
+#### Microsserviço
+
+Customer Service
+
+#### Recurso
+
+Income
+
+#### Versão da API
+
+v1
+
+#### Endpoint
+
+```http
+GET /customers/{customerId}/incomes/{incomeId}
+```
+
+#### Resposta de Sucesso
+
+**HTTP 200 OK**
+
+Retorna a renda solicitada.
+
+#### Códigos HTTP
+
+| Código | Descrição |
+|---------|-----------|
+| 200 | Consulta realizada com sucesso. |
+| 401 | Não autenticado. |
+| 403 | Sem permissão. |
+| 404 | Cliente ou renda não encontrados. |
+
+⬆️ [Voltar ao índice](#indice)
+
+---
+
+### 6.7.5 Atualizar Renda
+
+#### Objetivo
+
+Atualizar as informações de uma renda.
+
+#### Microsserviço
+
+Customer Service
+
+#### Recurso
+
+Income
+
+#### Versão da API
+
+v1
+
+#### Endpoint
+
+```http
+PUT /customers/{customerId}/incomes/{incomeId}
+```
+
+#### Campos Atualizáveis
+
+- incomeType
+- sourceName
+- amount
+- currency
+- frequency
+- incomeVerificationStatus
+- startDate
+- employmentId
+
+#### Regras de Negócio
+
+- A renda deve pertencer ao cliente.
+- O valor deve ser maior que zero.
+- O vínculo empregatício, quando informado, deve pertencer ao cliente.
+- Não é permitido alterar o identificador da renda.
+
+#### Resposta de Sucesso
+
+**HTTP 200 OK**
+
+Retorna a renda atualizada.
+
+⬆️ [Voltar ao índice](#indice)
+
+---
+
+### 6.7.6 Encerrar Renda
+
+#### Objetivo
+
+Registrar o encerramento de uma fonte de renda.
+
+#### Microsserviço
+
+Customer Service
+
+#### Recurso
+
+Income
+
+#### Versão da API
+
+v1
+
+#### Endpoint
+
+```http
+PATCH /customers/{customerId}/incomes/{incomeId}/termination
+```
+
+#### Corpo da Requisição
+
+```json
+{
+    "endDate": "2026-08-31"
+}
+```
+
+#### Regras de Negócio
+
+- A renda deve existir.
+- A renda deve pertencer ao cliente.
+- A renda não pode estar encerrada.
+- A data de encerramento deve ser igual ou posterior à data de início.
+- O histórico da renda é preservado.
+- A renda nunca é removida fisicamente.
+
+#### Resposta de Sucesso
+
+**HTTP 200 OK**
+
+Retorna a renda atualizada.
+
+#### Códigos HTTP
+
+| Código | Descrição |
+|---------|-----------|
+| 200 | Renda encerrada com sucesso. |
+| 400 | Dados inválidos. |
+| 401 | Não autenticado. |
+| 403 | Sem permissão. |
+| 404 | Cliente ou renda não encontrados. |
+| 409 | Conflito de negócio. |
+
+⬆️ [Voltar ao índice](#indice)
+
