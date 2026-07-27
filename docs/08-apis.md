@@ -8986,3 +8986,446 @@ Authorization: Bearer <token>
 - A API expõe exclusivamente operações de consulta (`GET`), reforçando que o Audit Service não é responsável pela criação, alteração ou exclusão de registros de auditoria.
 
 
+# 9. Notification Service API
+
+## 9.1 Visão Geral
+
+O Notification Service é responsável por disponibilizar notificações geradas automaticamente a partir dos eventos publicados pelos demais microserviços da plataforma.
+
+As notificações são criadas exclusivamente por meio do consumo de eventos do barramento de mensagens e permanecem disponíveis para consulta pelos usuários autorizados.
+
+Além da consulta, o serviço permite apenas marcar notificações como lidas.
+
+Não é permitido criar, editar ou excluir notificações por meio da API.
+
+---
+
+## 9.2 Responsabilidades
+
+O Notification Service é responsável por:
+
+- Disponibilizar notificações aos usuários autenticados.
+- Permitir consultas individuais de notificações.
+- Permitir listagem paginada de notificações.
+- Permitir marcar notificações como lidas.
+- Preservar o histórico das notificações geradas automaticamente.
+- Consumir eventos publicados pelos demais microserviços.
+
+---
+
+## 9.3 Fora do Escopo
+
+Não é responsabilidade do Notification Service:
+
+- Criar notificações via API.
+- Alterar o conteúdo das notificações.
+- Excluir notificações.
+- Executar regras de negócio dos demais microserviços.
+- Publicar eventos de domínio.
+- Reprocessar eventos do barramento.
+- Enviar notificações por e-mail, SMS ou push.
+
+---
+
+## 9.4 Características
+
+- API REST.
+- Comunicação em JSON.
+- Versionamento via URI (`/api/v1`).
+- Autenticação via JWT Bearer Token.
+- Paginação.
+- Ordenação.
+- Filtragem.
+- Criação automática das notificações por consumo de eventos.
+- Operação idempotente para marcação de leitura.
+
+---
+
+## 9.5 Recursos
+
+| Recurso | Descrição |
+|----------|-----------|
+| `/notifications` | Consulta e gerenciamento das notificações do usuário autenticado. |
+
+---
+
+## 9.6 Fluxo Geral
+
+```text
+Customer Service
+        │
+        ├────────────► CustomerCreated
+        ├────────────► CustomerUpdated
+        │
+Credit Analysis Service
+        │
+        ├────────────► CreditRequestCreated
+        ├────────────► CreditRequestCancelled
+        └────────────► CreditDecisionMade
+                         │
+                         ▼
+               Notification Service
+                         │
+                NotificationFactory
+                         │
+                  Cria Notification
+                         │
+                  Persiste Notification
+                         │
+                         ▼
+              API REST de Consulta
+                         │
+                         ▼
+        PATCH /notifications/{id}/read
+```
+
+---
+
+## 9.7 Convenções da API
+
+### 9.7.1 Identificadores
+
+Todos os identificadores utilizam UUID versão 4.
+
+---
+
+### 9.7.2 Datas
+
+Todos os campos de data seguem o padrão ISO-8601 UTC.
+
+Exemplo:
+
+```text
+2026-08-21T18:35:12Z
+```
+
+---
+
+### 9.7.3 Paginação
+
+As operações de listagem suportam os seguintes parâmetros:
+
+| Parâmetro | Descrição |
+|-----------|-----------|
+| `page` | Número da página. |
+| `size` | Quantidade de registros por página. |
+
+---
+
+### 9.7.4 Ordenação
+
+A ordenação utiliza o parâmetro:
+
+```text
+sort=createdAt,desc
+```
+
+Também é possível ordenar por outros campos suportados pela API.
+
+---
+
+### 9.7.5 Filtragem
+
+A API permite filtrar notificações pelos seguintes critérios:
+
+| Parâmetro | Descrição |
+|-----------|-----------|
+| `status` | Filtra pelo status da notificação (`UNREAD` ou `READ`). |
+| `type` | Filtra pelo tipo da notificação. |
+| `createdAfter` | Retorna notificações criadas após a data informada. |
+| `createdBefore` | Retorna notificações criadas antes da data informada. |
+
+Os filtros podem ser utilizados individualmente ou combinados.
+
+---
+
+### 9.7.6 Autenticação
+
+Todos os endpoints exigem autenticação via JWT Bearer Token.
+
+O usuário autenticado somente pode acessar suas próprias notificações.
+
+---
+
+### 9.7.7 Formato das Respostas
+
+Todas as respostas são retornadas em formato JSON utilizando UTF-8.
+
+Os contratos da API expõem apenas informações relevantes ao consumidor.
+
+Informações de rastreabilidade interna, como `eventId`, `correlationId` e `userId`, não fazem parte do contrato público da API.
+
+O campo `payload`, quando presente, contém informações complementares relacionadas ao recurso de negócio e **não faz parte do contrato público da API**, podendo evoluir entre versões sem quebra de compatibilidade.
+
+## 9.8 Endpoints
+
+### 9.8.1 Notificações
+
+---
+
+#### 9.8.1.1 GET /notifications
+
+##### Objetivo
+
+Retorna uma lista paginada das notificações pertencentes ao usuário autenticado.
+
+---
+
+##### Query Parameters
+
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|-----------|------|-------------|-----------|
+| `page` | Integer | Não | Número da página. |
+| `size` | Integer | Não | Quantidade de registros por página. |
+| `sort` | String | Não | Ordenação dos resultados. |
+| `status` | String | Não | Filtra por status (`UNREAD` ou `READ`). |
+| `type` | String | Não | Filtra pelo tipo da notificação. |
+| `createdAfter` | Instant | Não | Retorna notificações criadas após a data informada. |
+| `createdBefore` | Instant | Não | Retorna notificações criadas antes da data informada. |
+
+---
+
+##### Exemplo de Requisição
+
+```http
+GET /api/v1/notifications?page=0&size=20&sort=createdAt,desc
+Authorization: Bearer <jwt-token>
+```
+
+---
+
+##### Response
+
+```json
+{
+  "content": [
+    {
+      "id": "be73dcd6-879d-46be-87a6-d9e66b0af641",
+      "sourceService": "CREDIT_ANALYSIS",
+      "type": "CREDIT_DECISION_APPROVED",
+      "resourceType": "CREDIT_REQUEST",
+      "resourceId": "90b4c5b8-6d18-472d-a2c3-17e8c4a7de8f",
+      "title": "Crédito aprovado",
+      "status": "UNREAD",
+      "createdAt": "2026-08-21T18:10:02Z"
+    },
+    {
+      "id": "dcf8b2db-18f4-4c64-a5c4-57d10cf90c2e",
+      "sourceService": "CUSTOMER",
+      "type": "CUSTOMER_UPDATED",
+      "resourceType": "CUSTOMER",
+      "resourceId": "8b3b99d8-43dd-43a8-8d8d-5f66a7d2e341",
+      "title": "Cadastro atualizado",
+      "status": "READ",
+      "createdAt": "2026-08-20T10:15:48Z"
+    }
+  ],
+  "page": 0,
+  "size": 20,
+  "totalElements": 2,
+  "totalPages": 1
+}
+```
+
+---
+
+##### Regras de Negócio
+
+- Apenas notificações pertencentes ao usuário autenticado são retornadas.
+- O resultado é paginado.
+- Os filtros podem ser combinados.
+- O campo `payload` não é retornado na listagem.
+- A resposta não expõe informações internas de rastreabilidade.
+
+---
+
+##### Possíveis Respostas
+
+| Código | Descrição |
+|---------|-----------|
+| `200 OK` | Consulta realizada com sucesso. |
+| `401 Unauthorized` | Usuário não autenticado. |
+| `403 Forbidden` | Usuário sem permissão. |
+
+---
+
+#### 9.8.1.2 GET /notifications/{id}
+
+##### Objetivo
+
+Retorna os detalhes de uma notificação específica.
+
+---
+
+##### Path Parameters
+
+| Parâmetro | Tipo | Descrição |
+|-----------|------|-----------|
+| `id` | UUID | Identificador da notificação. |
+
+---
+
+##### Exemplo de Requisição
+
+```http
+GET /api/v1/notifications/{id}
+Authorization: Bearer <jwt-token>
+```
+
+---
+
+##### Response
+
+```json
+{
+  "id": "be73dcd6-879d-46be-87a6-d9e66b0af641",
+  "sourceService": "CREDIT_ANALYSIS",
+  "type": "CREDIT_DECISION_APPROVED",
+  "resourceType": "CREDIT_REQUEST",
+  "resourceId": "90b4c5b8-6d18-472d-a2c3-17e8c4a7de8f",
+  "title": "Crédito aprovado",
+  "message": "Sua solicitação de crédito foi aprovada.",
+  "status": "UNREAD",
+  "payload": {
+    "approvedAmount": 50000.00,
+    "interestRate": 1.29,
+    "approvedTermInMonths": 48
+  },
+  "createdAt": "2026-08-21T18:10:02Z",
+  "readAt": null
+}
+```
+
+---
+
+##### Regras de Negócio
+
+- Apenas o proprietário da notificação pode consultá-la.
+- O campo `payload` contém informações complementares relacionadas ao recurso de negócio.
+- O conteúdo do `payload` não faz parte do contrato público da API.
+- Notificações inexistentes retornam `404 Not Found`.
+
+---
+
+##### Possíveis Respostas
+
+| Código | Descrição |
+|---------|-----------|
+| `200 OK` | Notificação encontrada. |
+| `401 Unauthorized` | Usuário não autenticado. |
+| `403 Forbidden` | Usuário sem permissão. |
+| `404 Not Found` | Notificação não encontrada. |
+
+---
+
+#### 9.8.1.3 PATCH /notifications/{id}/read
+
+##### Objetivo
+
+Marca uma notificação como lida.
+
+---
+
+##### Path Parameters
+
+| Parâmetro | Tipo | Descrição |
+|-----------|------|-----------|
+| `id` | UUID | Identificador da notificação. |
+
+---
+
+##### Exemplo de Requisição
+
+```http
+PATCH /api/v1/notifications/{id}/read
+Authorization: Bearer <jwt-token>
+```
+
+---
+
+##### Request Body
+
+Esta operação não possui corpo de requisição.
+
+---
+
+##### Response
+
+```json
+{
+  "id": "be73dcd6-879d-46be-87a6-d9e66b0af641",
+  "status": "READ",
+  "readAt": "2026-08-21T18:20:10Z"
+}
+```
+
+---
+
+##### Regras de Negócio
+
+- Apenas o proprietário da notificação pode executar esta operação.
+- Apenas notificações no estado `UNREAD` podem ser marcadas como lidas.
+- O método é idempotente.
+- O campo `readAt` é preenchido automaticamente pelo sistema.
+- O conteúdo da notificação permanece imutável.
+
+---
+
+##### Possíveis Respostas
+
+| Código | Descrição |
+|---------|-----------|
+| `200 OK` | Notificação marcada como lida. |
+| `401 Unauthorized` | Usuário não autenticado. |
+| `403 Forbidden` | Usuário sem permissão. |
+| `404 Not Found` | Notificação não encontrada. |
+
+
+## 9.9 Códigos HTTP
+
+| Código | Descrição |
+|---------|-----------|
+| `200 OK` | Requisição processada com sucesso. |
+| `400 Bad Request` | Parâmetros inválidos. |
+| `401 Unauthorized` | Usuário não autenticado. |
+| `403 Forbidden` | Usuário sem permissão para acessar o recurso. |
+| `404 Not Found` | Notificação não encontrada. |
+| `500 Internal Server Error` | Erro interno da aplicação. |
+
+---
+
+## 9.10 Eventos Consumidos
+
+O Notification Service não publica eventos.
+
+Seu papel é consumir eventos de domínio publicados pelos demais microserviços e transformá-los em notificações destinadas aos usuários da plataforma.
+
+### Eventos Consumidos
+
+| Evento | Serviço de Origem |
+|---------|-------------------|
+| `CustomerCreated` | Customer Service |
+| `CustomerUpdated` | Customer Service |
+| `CreditRequestCreated` | Credit Analysis Service |
+| `CreditRequestCancelled` | Credit Analysis Service |
+| `CreditDecisionMade` | Credit Analysis Service |
+
+---
+
+## 9.11 Considerações Arquiteturais
+
+- O Notification Service atua exclusivamente como consumidor de eventos.
+- Todas as notificações são criadas automaticamente a partir dos eventos consumidos do barramento de mensagens.
+- Não existe endpoint para criação de notificações.
+- A `NotificationFactory` é responsável por transformar eventos de domínio em entidades `Notification`.
+- O Aggregate Root `Notification` possui apenas um comportamento mutável: marcar a notificação como lida.
+- A API disponibiliza operações de consulta (`GET`) e uma única operação de atualização (`PATCH /notifications/{id}/read`).
+- O campo `payload` é armazenado como `JsonNode`, preservando informações complementares relacionadas ao recurso de negócio.
+- O conteúdo do `payload` **não faz parte do contrato público da API** e poderá evoluir entre versões sem quebra de compatibilidade.
+- Os campos `eventId`, `correlationId` e `userId` são utilizados exclusivamente para processamento interno, rastreabilidade e observabilidade, não sendo expostos pela API.
+- Os campos `resourceType` e `resourceId` permitem que aplicações clientes naveguem diretamente para o recurso de negócio relacionado à notificação sem depender da interpretação do `payload`.
+- Apenas o proprietário da notificação pode consultá-la ou marcá-la como lida.
+- O método `PATCH /notifications/{id}/read` é idempotente, garantindo que múltiplas chamadas produzam o mesmo estado final.
+- O conteúdo das notificações é imutável após sua criação.
+- O Notification Service não executa regras de negócio dos demais microserviços, limitando-se a projetar eventos em notificações destinadas aos usuários.
+
